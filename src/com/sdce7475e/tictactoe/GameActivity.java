@@ -11,10 +11,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class GameActivity extends Activity implements OnClickListener {
-	
-	private final String[] KEY_CELL_STATES = {
-			"cell0", "cell1", "cell2", 
-	};
+
+	// state storage/retrieval keys
+//	private final String[] KEY_CELL_STATES = {
+//			"cell0", "cell1", "cell2", 
+//			"cell3", "cell4", "cell5", 
+//			"cell6", "cell7", "cell8", 
+//	};
+	private final String KEY_CELL_STATES = "cell_states";
+	private final String KEY_GAME_STATE = "game_state";
+	private final String KEY_TURN = "turn";
 
 	private enum CellState {
 		NONE,
@@ -62,6 +68,41 @@ public class GameActivity extends Activity implements OnClickListener {
 	}
 
 	@Override
+	protected void onRestoreInstanceState(Bundle inState) {
+		super.onRestoreInstanceState(inState);
+		mGameState = GameState.values()[inState.getInt(KEY_GAME_STATE)];
+		mTurn = inState.getBoolean(KEY_TURN) ? 0 : 1;
+		int[] states = inState.getIntArray(KEY_CELL_STATES);
+		for (int ii = 0; ii < 9; ++ii) {
+			mCellState[ii] = CellState.values()[states[ii]];
+			switch (mCellState[ii]) {
+			case NONE:
+				mCells[ii].setImageResource(R.drawable.empty);
+				break;
+			case CIRCLE:
+				mCells[ii].setImageResource(R.drawable.circle);
+				break;
+			case EX:
+				mCells[ii].setImageResource(R.drawable.ex);
+				break;
+			}
+		}
+		mMessage.setText(mTurn == 0 ? R.string.player1Turn : R.string.player2Turn);
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt(KEY_GAME_STATE, mGameState.ordinal());
+		int[] states = new int[9];
+		for (int ii = 0; ii < 9; ++ii) {
+			states[ii] = mCellState[ii].ordinal();
+		}
+		outState.putIntArray(KEY_CELL_STATES, states);
+		outState.putBoolean(KEY_TURN, mTurn == 0);
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.game_activity_actions, menu);
@@ -82,7 +123,7 @@ public class GameActivity extends Activity implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		final int index = (Integer) v.getTag();
-		if (mGameState == GameState.IN_PROGRESS 
+		if (mGameState == GameState.IN_PROGRESS
 				&& index >= 0 && index < 9 && mCellState[index] == CellState.NONE) {
 			final int id = mTurn == 0 ? R.drawable.circle : R.drawable.ex;
 			mCellState[index] = mTurn == 0 ? CellState.CIRCLE : CellState.EX;
