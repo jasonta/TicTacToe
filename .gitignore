@@ -24,3 +24,9 @@ proguard/
 
 # Mac-specific files
 .DS_Store
+
+# log files
+*.log
+
+# swap files
+*.swp

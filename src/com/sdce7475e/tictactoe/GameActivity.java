@@ -1,7 +1,13 @@
 package com.sdce7475e.tictactoe;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -12,12 +18,8 @@ import android.widget.TextView;
 
 public class GameActivity extends Activity implements OnClickListener {
 
-	// state storage/retrieval keys
-//	private final String[] KEY_CELL_STATES = {
-//			"cell0", "cell1", "cell2", 
-//			"cell3", "cell4", "cell5", 
-//			"cell6", "cell7", "cell8", 
-//	};
+	private static final String TAG = "GameActivity";
+
 	private final String KEY_CELL_STATES = "cell_states";
 	private final String KEY_GAME_STATE = "game_state";
 	private final String KEY_TURN = "turn";
@@ -45,10 +47,35 @@ public class GameActivity extends Activity implements OnClickListener {
 			R.id.cell6, R.id.cell7, R.id.cell8 };
 	private int mTurn = 0; // 0 = circle, 1 = ex
 
+	private TicTacToeService mBoundService;
+
+	/**
+	 * Create a connection to allow interacting with our service.
+	 */
+	private ServiceConnection mConnection = new ServiceConnection() {
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			// This is called when the connection with the service has been
+			// established, giving us the service object we can use to
+			// interact with the service.  Because we have bound to a explicit
+			// service that we know is running in our own process, we can
+			// cast its IBinder to a concrete class and directly access it.
+			mBoundService = ((TicTacToeService.TicTacToeBinder) service).getService();
+		}
+
+		public void onServiceDisconnected(ComponentName className) {
+			// This is called when the connection with the service has been
+			// unexpectedly disconnected -- that is, its process crashed.
+			// Because it is running in our same process, we should never
+			// see this happen.
+			mBoundService = null;
+		}
+	};
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
+		Log.v(TAG, "onCreate");
 
 		mMessage = (TextView) findViewById(R.id.message);
 		mMessage.setText(mTurn == 0 ? R.string.player1Turn : R.string.player2Turn);
@@ -64,6 +91,31 @@ public class GameActivity extends Activity implements OnClickListener {
 			mCells[ii] = (ImageView) findViewById(CELL_IDS[ii]);
 			mCells[ii].setOnClickListener(this);
 			mCells[ii].setTag(ii);
+		}
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		bindService(new Intent(this, TicTacToeService.class), mConnection, Context.BIND_AUTO_CREATE);
+
+		// since we have resumed activity need to cancel any alarm that will create a notification
+		if (mBoundService != null) {
+			mBoundService.cancelNotification(this);
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		// when paused we need to start alarm which will create a notification
+		// when it's the user's turn again
+		startService(new Intent(this, TicTacToeService.class));
+
+		if (mConnection != null) {
+			unbindService(mConnection);
 		}
 	}
 
