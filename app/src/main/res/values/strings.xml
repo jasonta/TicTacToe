@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Tic-Tac-Toe</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="player1Turn">"Player 1's Turn"</string>
+    <string name="player2Turn">"Player 2's Turn"</string>
+    <string name="player1Wins">Player 1 Wins!</string>
+    <string name="player2Wins">Player 2 Wins!</string>
+    <string name="tieGame">Tie Game</string>
+    <string name="playAgain">Play again</string>
+    <string name="restart">Restart</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

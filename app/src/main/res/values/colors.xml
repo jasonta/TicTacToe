@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brightGridColor">#ffff0000</color>
+    <color name="darkGridColor">#ff000000</color>
+    <color name="winMessage">#ffff0000</color>
+    <color name="headerColor">#c8c8cc</color>
+    <color name="footerColor">#d2d2d6</color>
+    <color name="gameBackgroundStart">#a4afac</color>
+    <color name="gameBackgroundCenter">#b4acb0</color>
+    <color name="gameBackgroundEnd">#a4afac</color>
+</resources>
